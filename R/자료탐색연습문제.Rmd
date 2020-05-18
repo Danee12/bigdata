@@ -12,6 +12,8 @@ mean(wt)
 median(wt)
 mean(wt,trim = 0.15)
 sd(wt)
+#2) 중량(wt)에 대해 summary() 함수의 적용 결과를 출력하시오.
+summary(wt)
 # 3) 실린더수(cyl)에 대해 summary()함수의 적용 결과를 출력하시오.
 summary(cyl)
 # 4) 앞에서 구한 도수분포표를 막대그래프로 출력하시오.
