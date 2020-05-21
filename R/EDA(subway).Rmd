@@ -1,0 +1,97 @@
+---
+title: "EDA"
+author: "SeungJe"
+date: '2020 5 20 '
+output: html_document
+---
+
+```{r}
+df  <- read.csv('subway1.csv')
+
+names(df) <- c('date','line','name_number','name','section',5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,'sum')
+head(df)
+
+
+par(mfrow=c(3,3))
+for(i in 1:8){
+  a <- paste(as.character(i),'호선',sep='')
+  df_1 <- subset(df,line == a)
+  
+  
+  hist(df_1[,26], main = a,col='yellow',xlab = '승객수')
+}
+
+par(mfrow=c(3,3))
+for(i in 1:8){
+  a <- paste(as.character(i),'호선',sep='')
+  df_1 <- subset(df,line == a)
+  
+  
+  boxplot(df_1[,26], main = a,col='yellow',xlab = '승객수')
+}
+
+
+
+
+for(i in 1:8){
+  line <- paste(as.character(i),'호선',sep='')
+  df_1 <- subset(df,line == line)
+  c <- c()
+  for(j in 1:181){
+    d <- as.vector(t(unique(df['date'])))[j]
+    a <- sum(subset(df_1,date == d&section=='승차')['sum'])
+    b <- sum(subset(df_1,date == d&section=='하차')['sum'])
+    c <- rbind(c,c(i,a,b))
+  }
+  par(mfrow=c(2,1))  
+  hist(c[,2], main = name,col='yellow',xlab = '승차수')
+  hist(c[,3], main = name,col='yellow',xlab = '하차수')
+}
+
+for(i in 1:8){
+  line <- paste(as.character(i),'호선',sep='')
+  df_1 <- subset(df,line == line)
+  c <- c()
+  for(j in 1:181){
+    d <- as.vector(t(unique(df['date'])))[j]
+    a <- sum(subset(df_1,date == d&section=='승차')['sum'])
+    b <- sum(subset(df_1,date == d&section=='하차')['sum'])
+    c <- rbind(c,c(i,a,b))
+  }
+  plot(1:181, c[,2], main = line,col='blue',xlab = '승객수', type ='l')
+  lines(1:181, c[,3],col='red', type ='l')
+}
+
+for(i in 1:8){
+  line <- paste(as.character(i),'호선',sep='')
+  df_1 <- subset(df,line == line)
+  c <- c()
+  for(j in 1:181){
+    d <- as.vector(t(unique(df['date'])))[j]
+    a <- sum(subset(df_1,date == d&section=='승차')['sum'])
+    b <- sum(subset(df_1,date == d&section=='하차')['sum'])
+    c <- rbind(c,c(i,a,b,j))
+  }
+  par(mfrow=c(1,1))
+  plot(1:181, c[,2], main = line,col='blue',xlab = '승차수',pch=19)
+  #plot(1:181, c[,3],main = line,col='red',xlab = '하차수',pch=19)
+}
+
+
+
+
+
+unique(df$date)[1]
+q <- aggregate(df$sum, by=list(df$date), FUN=sum)
+q
+
+plot(1:181,t(q[2]),xlab = '날짜',ylab='승객수', main='날짜별 승하차 총 인원수')
+
+
+q <- aggregate(df$sum, by=list(df$date,df$section), FUN=sum)
+q1 <- q$x[q$Group.2=='승차']
+q2 <- q$x[q$Group.2=='하차']
+plot(1:181,q1,xlab = '날짜',ylab='승객수', main='날짜별 승차 총 인원수')
+
+
+```
