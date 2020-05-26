@@ -1,0 +1,98 @@
+---
+title: "Untitled"
+author: "SeungJe"
+date: '2020 5 26 '
+output: html_document
+---
+
+```{r}
+#[지도 연습문제]
+
+#1. R을 이용하여 서울시 한강 이남의 구청들의 위치에 마커와 구청 이름을 지도 위에 표시하시오.
+library(ggmap)
+register_google(key = 'AIzaSyCROQY8wroKnwUOZI7RpTml-UYG5wBqLAY')
+
+names <-c('종로구','용산구','광진구','중량구','강북구','노원구','서대문구','양천구','구로구',
+          '영등포구','관악구','강남구','강동구','중구','성동구','동대문구','성북구','도봉구',
+          '은평구','마포구','강서구','금천구','동작구','서초구','송파구')
+addr <- c("서울시 종로구 삼봉로43","서울시 용산구 녹사평대로150","서울시 광진구 자양로117",
+          "서울시 중랑구 봉화산로179","서울시 강북구 도봉로89길13",
+          "서울시 노원구 노해로437","서울시 서대문구 연희로248",
+          "서울시 양천구 목동동로105","서울시 구로구 가마산로245",
+          "서울시 영등포구 당산로123" , "서울시 관악구 관악로145",
+          "서울시 강남구 학동로426" , "서울시 강동구 성내로25",
+          "서울시 중구 창경궁로17" , "서울시 성동구 고산자로270",
+          "서울시 동대문구 천호대로145" , "서울시 성북구 보문로168",
+          "서울시 도봉구 마들로656" , "서울시 은평구 은평로195",
+          "서울시 마포구 월드컵로212" , "서울시 강서구 화곡로302",
+          "서울시 금천구 시흥대로73길70" , "서울시 동작구 장승배기로 161",
+          "서울시 서초구 남부순환로2584" , "서울시 송파구 올림픽로326")
+gc <- geocode(enc2utf8(addr))
+df <- data.frame('시군구'=names,lon = gc$lon, lat = gc$lat)
+
+cen <-  c(mean(df$lon),mean(df$lat))
+map <-get_googlemap(center = cen, maptype = 'roadmap',markers = gc,zoom = 11)
+ggmap(map)+ geom_text(data = df, aes(x=lon,y=lat),size=4,label = df$시군구)
+
+
+
+
+#2. '2018년도 시국구별 월별 교통사고 자료'로부터 서울시의 각 구별 1년 교통사고 발생건수를 지도상에 원의 크기로 나타내시오.
+#  - Sonar 원의 위치는 구의 위치로 하시오.
+#  - 원의 색은 red로 하고 투명도를 .05로 하시오.
+#  - 자료에는 월별로 데이터가 기록되어 있는데 1년 데이터를 합산하여 이용하시오.
+#  - 서울 지역이 모두 지도에 나도오록 하시오.
+# * 데이터출처: 공동데이터포털(https://www.data.go.kr)에서 '교통사고통계' 검색 후 '도로교통공단_시도_시군구별_교통사고_통계(2019)'를 다운받아 사용한다.
+seoul2018
+seoul <- seoul2018[seoul2018['시도']=='서울',]
+seoul_df <- aggregate(cbind(발생건수, 사망자수, 부상자수)~시군구 ,data = seoul,sum)
+df <- merge(df,seoul_df,key='시군구')
+
+map <-get_googlemap(center = cen, maptype = 'roadmap',zoom = 11)
+gmap <-  ggmap(map)
+gmap+geom_point(data=df,aes(x=lon,y=lat,size=발생건수), alpha = 0.5, col= 'red')+
+  scale_size_continuous(range = c(1,14))
+
+
+
+#3. 2번과 동일한 자료를 이용하여 광역시도별 1년 사망자수를 지도상에 원의 크기로 나타내시오.
+# - 세종시는 데이터에서 삭제하시오.
+# - 원의 색은 black으로 하고 투명도를 .05로 하시오.
+# - 남한 지역이 모두 지도에 나오도록 하시오.
+
+df <- aggregate(cbind(발생건수, 사망자수, 부상자수)~시도 ,data = seoul2018,sum)
+df
+gc <- geocode(enc2utf8(df$시도))
+df <- cbind(df,gc)
+df <- df[-10,] 
+
+cen <-  c(mean(df$lon),mean(df$lat))
+map <-get_googlemap(center = cen, maptype = 'roadmap',zoom = 7)
+gmap <-  ggmap(map)
+gmap+geom_point(data=df,aes(x=lon,y=lat,size=사망자수), alpha = 0.5, col= 'black')+
+  scale_size_continuous(range = c(1,14))
+
+
+
+#4. 2.번과 동일한 자료를 이용하여 광역시도별 7, 8월 부상자수를 지도상에 원의 크기로 나타내시오.
+# - 세종시는 데이터에서 삭제하시오.
+# - 원의 색은 black으로 하고 투명도를 .05로 하시오.
+# - 남한 지역이 모두 지도에 나오도록 하시오.
+
+seoul_78 <- seoul2018[c(seoul2018['시도']!='세종'&c(seoul2018['월']=='07월'|seoul2018['월']=='08월')),]
+seoul_78
+df <- aggregate(cbind(발생건수, 사망자수, 부상자수)~시도,data = seoul_78,sum)
+df
+gc <- geocode(enc2utf8(df$시도))
+
+df <- cbind(df,gc)
+
+cen <-  c(mean(df$lon),mean(df$lat))
+map <-get_googlemap(center = cen, maptype = 'roadmap',zoom = 7)
+gmap <-  ggmap(map)
+gmap+geom_point(data=df,aes(x=lon,y=lat,size=부상자수), alpha = 0.5, col= 'black')+
+  scale_size_continuous(range = c(1,14)) +geom_text(data = df, aes(x=lon,y=lat),size=4,label = df$시도,col = 'green')
+
+
+```
+
