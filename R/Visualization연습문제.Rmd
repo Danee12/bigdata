@@ -111,6 +111,9 @@ ggplot(df.tsne, aes(X1,X2)) + geom_point(size=2)
 ds <- swiss
 tsne <- Rtsne(ds,dim=3, perplexity =5)   #perplexity 샘플개수
 df.tsne <- data.frame(tsne$Y)
+library(car)
+library(rgl)
+library(mgcv)
 
 scatter3d(df.tsne$X1, df.tsne$X2, df.tsne$X3, surface = F)
 
